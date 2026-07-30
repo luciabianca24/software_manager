@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Enum\LicenseStatus;
+use App\Entity\LicenseStatus;
 use App\Repository\LicenseRepository;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;

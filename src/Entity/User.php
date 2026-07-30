@@ -2,10 +2,11 @@
 
 namespace App\Entity;
 
-use App\Enum\Role;
+use App\Entity\Role;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
@@ -21,19 +22,19 @@ class User
     #[ORM\Column(type: UuidType::NAME, unique: true)]
     private ?Uuid $id = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     #[Assert\NotBlank]
     private string $name;
 
-    #[ORM\Column(type: 'string', length: 255, unique: true)]
+    #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
     #[Assert\NotBlank]
     #[Assert\Email]
     private string $email;
 
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: Types::STRING, length: 255)]
     private string $password;
 
-    #[ORM\Column(type: 'string', enumType: Role::class)]
+    #[ORM\Column(type: Types::STRING, enumType: Role::class)]
     private Role $role;
 
     /**
@@ -42,8 +43,12 @@ class User
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: License::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $licenses;
 
-    public function __construct(string $name, string $email, string $password, Role $role = Role::CLIENT)
-    {
+    public function __construct(
+        string $name,
+        string $email,
+        string $password,
+        Role $role = Role::USER
+    ) {
         $this->name = $name;
         $this->email = $email;
         $this->password = $password;
@@ -120,11 +125,8 @@ class User
 
     public function removeLicense(License $license): self
     {
-        if ($this->licenses->removeElement($license)) {
-            if ($license->getUser() === $this) {
-                $license->setUser(null);
-            }
-        }
+
+        $this->licenses->removeElement($license);
 
         return $this;
     }
